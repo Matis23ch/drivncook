@@ -2,6 +2,8 @@
 session_start();
 require_once __DIR__ . '/../../config/database.php';
 
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
 if ($_SESSION['role'] !== 'FRANCHISE') {
     header('Location: ../login.php');
     exit;
@@ -9,103 +11,133 @@ if ($_SESSION['role'] !== 'FRANCHISE') {
 
 $franchise_id = $_SESSION['franchise_id'];
 
-/* 🔒 Vérifier camion attribué */
-$checkCamion = $pdo->prepare("SELECT id FROM camions WHERE franchise_id = ?");
-$checkCamion->execute([$franchise_id]);
-if (!$checkCamion->fetch()) {
-    die("<div class='alert alert-danger'>Vous devez avoir un camion attribué pour commander.</div>");
-}
-
-/* Produits DC */
-$produits = $pdo->query("SELECT id, nom, prix, stock FROM produits")->fetchAll();
+/* Produits DC avec stock */
+$produits = $pdo->query("
+    SELECT id, nom, prix, stock
+    FROM produits
+")->fetchAll(PDO::FETCH_ASSOC);
 
 $taux = null;
 $valide = false;
-$totalDC = 0;
-$totalGlobal = 0;
+$recap = [];
 
-if ($_POST && isset($_POST['calculer'])) {
+if ($_POST) {
+
+    $totalDC = 0;
+    $totalGlobal = 0;
 
     foreach ($produits as $p) {
         $qte = (int)($_POST['qte_' . $p['id']] ?? 0);
+
+        if ($qte > $p['stock']) {
+            die("Quantité trop élevée pour {$p['nom']}");
+        }
+
         if ($qte > 0) {
-            $totalDC += $qte;
-            $totalGlobal += $qte;
+            $totalDC += $qte * $p['prix'];
+            $totalGlobal += $qte * $p['prix'];
+            $recap[] = [
+                'nom' => $p['nom'],
+                'qte' => $qte,
+                'prix' => $p['prix'],
+                'type' => 'DC'
+            ];
         }
     }
 
-    $qteLibre = (int)($_POST['qte_libre'] ?? 0);
-    if ($qteLibre > 0) {
-        $totalGlobal += $qteLibre;
+    $qteLibre  = (int)($_POST['qte_libre'] ?? 0);
+    $prixLibre = (float)($_POST['prix_libre'] ?? 0);
+
+    if ($qteLibre > 0 && $prixLibre > 0) {
+        $totalGlobal += $qteLibre * $prixLibre;
+        $recap[] = [
+            'nom' => 'Produits libres',
+            'qte' => $qteLibre,
+            'prix' => $prixLibre,
+            'type' => 'LIBRE'
+        ];
     }
 
     if ($totalGlobal > 0) {
         $taux = round(($totalDC / $totalGlobal) * 100, 2);
         $valide = $taux >= 80;
     }
-}
 
-/* ✅ Validation commande */
-if ($_POST && isset($_POST['valider']) && $_POST['taux'] >= 80) {
+    /* VALIDATION COMMANDE */
+    if (isset($_POST['valider']) && $valide) {
 
-    $pdo->beginTransaction();
+        try {
+            $pdo->beginTransaction();
 
-    $stmt = $pdo->prepare("
-        INSERT INTO commandes (franchise_id, date_commande, taux_dc)
-        VALUES (?, NOW(), ?)
-    ");
-    $stmt->execute([$franchise_id, $_POST['taux']]);
-    $commande_id = $pdo->lastInsertId();
+            $stmt = $pdo->prepare("
+                INSERT INTO commandes (franchise_id, date_commande, taux_dc)
+                VALUES (?, NOW(), ?)
+            ");
+            $stmt->execute([$franchise_id, $taux]);
+            $commande_id = $pdo->lastInsertId();
 
-    foreach ($produits as $p) {
-        $qte = (int)($_POST['qte_' . $p['id']] ?? 0);
-        if ($qte > 0) {
+            foreach ($recap as $r) {
 
-            if ($qte > $p['stock']) {
-                $pdo->rollBack();
-                die("Stock insuffisant pour {$p['nom']}");
+                if ($r['type'] === 'DC') {
+                    $produit = array_filter($produits, fn($p) => $p['nom'] === $r['nom']);
+                    $produit = array_values($produit)[0];
+
+                    $stmt = $pdo->prepare("
+                        INSERT INTO commande_lignes
+                        (commande_id, produit_id, quantite, prix, type)
+                        VALUES (?, ?, ?, ?, 'DC')
+                    ");
+                    $stmt->execute([
+                        $commande_id,
+                        $produit['id'],
+                        $r['qte'],
+                        $r['prix']
+                    ]);
+
+                    $pdo->prepare("
+                        UPDATE produits SET stock = stock - ?
+                        WHERE id = ?
+                    ")->execute([$r['qte'], $produit['id']]);
+                } else {
+                    $stmt = $pdo->prepare("
+                        INSERT INTO commande_lignes
+                        (commande_id, produit_id, quantite, prix, type)
+                        VALUES (?, NULL, ?, ?, 'LIBRE')
+                    ");
+                    $stmt->execute([
+                        $commande_id,
+                        $r['qte'],
+                        $r['prix']
+                    ]);
+                }
             }
 
-            // ligne commande
-            $stmt = $pdo->prepare("
-                INSERT INTO commande_lignes
-                (commande_id, produit_id, quantite, prix, type)
-                VALUES (?, ?, ?, ?, 'DC')
-            ");
-            $stmt->execute([$commande_id, $p['id'], $qte, $p['prix']]);
-
-            // décrément stock
-            $stmt = $pdo->prepare("
-                UPDATE produits SET stock = stock - ?
+            $pdo->prepare("
+                UPDATE commandes
+                SET total = (
+                    SELECT SUM(quantite * prix)
+                    FROM commande_lignes
+                    WHERE commande_id = ?
+                )
                 WHERE id = ?
-            ");
-            $stmt->execute([$qte, $p['id']]);
+            ")->execute([$commande_id, $commande_id]);
+
+            $pdo->commit();
+            header("Location: facture.php?id=$commande_id");
+            exit;
+
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            die("Erreur commande : " . $e->getMessage());
         }
     }
-
-    // Produits libres
-    if ($_POST['qte_libre'] > 0) {
-        $stmt = $pdo->prepare("
-            INSERT INTO commande_lignes
-            (commande_id, produit_id, quantite, prix, type)
-            VALUES (?, NULL, ?, ?, 'LIBRE')
-        ");
-        $stmt->execute([
-            $commande_id,
-            $_POST['qte_libre'],
-            $_POST['prix_libre']
-        ]);
-    }
-
-    $pdo->commit();
-    header('Location: mes_achats.php');
-    exit;
 }
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
+<meta charset="UTF-8">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="container">
@@ -115,41 +147,49 @@ if ($_POST && isset($_POST['valider']) && $_POST['taux'] >= 80) {
 <form method="POST">
 
 <h4>Produits Driv’n Cook</h4>
+
 <?php foreach ($produits as $p): ?>
 <div class="row mb-2">
-    <div class="col"><?= $p['nom'] ?> (stock: <?= $p['stock'] ?>)</div>
+    <div class="col">
+        <?= htmlspecialchars($p['nom']) ?>
+        <small class="text-muted">
+            (<?= number_format($p['prix'],2) ?> € — stock <?= $p['stock'] ?>)
+        </small>
+    </div>
     <div class="col-3">
-        <input type="number" name="qte_<?= $p['id'] ?>" min="0" value="0" class="form-control">
+        <input type="number"
+               name="qte_<?= $p['id'] ?>"
+               min="0"
+               max="<?= $p['stock'] ?>"
+               class="form-control"
+               value="<?= $_POST['qte_'.$p['id']] ?? 0 ?>">
     </div>
 </div>
 <?php endforeach; ?>
 
 <hr>
 
-<div class="card p-3 border-warning">
-<h5 class="text-warning">Produits libres (hors DC)</h5>
+<div class="card border-warning p-3">
+<h5 class="text-warning">Produits libres</h5>
 <input type="number" name="qte_libre" class="form-control mb-2" placeholder="Quantité">
 <input type="number" step="0.01" name="prix_libre" class="form-control" placeholder="Prix unitaire">
 </div>
 
-<button name="calculer" class="btn btn-primary mt-3">Calculer</button>
+<button class="btn btn-primary mt-3">Calculer</button>
 
 <?php if ($taux !== null): ?>
 <div class="alert <?= $valide ? 'alert-success' : 'alert-danger' ?> mt-3">
-Taux DC : <?= $taux ?> %
+Taux Driv’n Cook : <?= $taux ?> %
 </div>
 
 <?php if ($valide): ?>
-<input type="hidden" name="taux" value="<?= $taux ?>">
 <button name="valider" class="btn btn-success">Valider la commande</button>
 <?php endif; ?>
 <?php endif; ?>
 
 </form>
-
 </body>
 </html>
-
 
 
 
