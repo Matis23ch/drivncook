@@ -62,6 +62,8 @@ $franchises = FranchiséController::index($pdo);
 <?php endforeach; ?>
 </table>
 
+<a href="dashboard.php" class="btn btn-primary mt-3">Retour au Dashboard</a>
+
 </body>
 </html>
 

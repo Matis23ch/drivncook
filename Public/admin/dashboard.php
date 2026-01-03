@@ -36,7 +36,14 @@ $camionsHS = $pdo->query("SELECT COUNT(*) FROM camions WHERE etat='PANNE'")->fet
 </head>
 <body class="container">
 
-<h1>Dashboard DRIV’N COOK</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Dashboard DRIV’N COOK</h1>
+    
+    <!-- Bouton Déconnexion -->
+    <form action="/drivncook/public/logout.php" method="POST">
+        <button type="submit" class="btn btn-danger">Déconnexion</button>
+    </form>
+</div>
 
 <div class="row">
 

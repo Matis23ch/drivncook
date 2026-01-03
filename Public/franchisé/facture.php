@@ -42,6 +42,8 @@ $totalLibre = 0;
 
 <body class="container mt-4">
 
+<a href="dashboard.php" class="btn btn-outline-secondary mb-3">← Dashboard</a>
+
 <h1>Facture</h1>
 
 <p>
@@ -55,40 +57,42 @@ $totalLibre = 0;
     <th>Produit</th>
     <th>Type</th>
     <th>Quantité</th>
-    <th>Prix</th>
-    <th>Total</th>
+    <th>Montant</th>
 </tr>
 </thead>
 <tbody>
 
 <?php foreach ($lignes as $l):
-    $ligneTotal = $l['quantite'] * $l['prix'];
+    $ligneTotal = ($l['type'] === 'LIBRE')
+        ? $l['prix']
+        : ($l['quantite'] * $l['prix']);
+
     if ($l['type'] === 'LIBRE') $totalLibre += $ligneTotal;
 ?>
 <tr>
-    <td><?= htmlspecialchars($l['nom'] ?? 'Produit libre') ?></td>
+    <td><?= htmlspecialchars($l['nom'] ?? 'Produit libre hors Driv’n Cook') ?></td>
     <td><?= $l['type'] ?></td>
     <td><?= $l['quantite'] ?></td>
-    <td><?= number_format($l['prix'],2) ?> €</td>
-    <td><?= number_format($ligneTotal,2) ?> €</td>
+    <td><?= number_format($ligneTotal, 2) ?> €</td>
 </tr>
 <?php endforeach; ?>
 
 <tr>
-    <th colspan="4" class="text-end">Total produits libres</th>
-    <th><?= number_format($totalLibre,2) ?> €</th>
+    <th colspan="3" class="text-end">Total produits libres</th>
+    <th><?= number_format($totalLibre, 2) ?> €</th>
 </tr>
 <tr>
-    <th colspan="4" class="text-end">TOTAL GLOBAL</th>
-    <th><?= number_format($commande['total'],2) ?> €</th>
+    <th colspan="3" class="text-end">TOTAL GLOBAL</th>
+    <th><?= number_format($commande['total'], 2) ?> €</th>
 </tr>
 
 </tbody>
 </table>
 
-<a href="mes_factures.php" class="btn btn-secondary">Retour</a>
+<a href="mes_factures.php" class="btn btn-secondary">Retour aux factures</a>
 
 </body>
 </html>
+
 
 

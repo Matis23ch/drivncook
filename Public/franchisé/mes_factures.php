@@ -20,12 +20,15 @@ $commandes = $stmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
 <meta charset="UTF-8">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
+
 <body class="container">
+
+<a href="dashboard.php" class="btn btn-outline-secondary mb-3">← Dashboard</a>
 
 <h1>Mes factures</h1>
 
@@ -55,7 +58,6 @@ $commandes = $stmt->fetchAll();
 </table>
 <?php endif; ?>
 
-<a href="dashboard.php" class="btn btn-secondary mt-3">Retour</a>
-
 </body>
 </html>
+

@@ -11,7 +11,7 @@ if ($_SESSION['role'] !== 'FRANCHISE') {
 
 $franchise_id = $_SESSION['franchise_id'];
 
-/* Produits DC avec stock */
+/* Produits Driv’n Cook */
 $produits = $pdo->query("
     SELECT id, nom, prix, stock
     FROM produits
@@ -30,31 +30,34 @@ if ($_POST) {
         $qte = (int)($_POST['qte_' . $p['id']] ?? 0);
 
         if ($qte > $p['stock']) {
-            die("Quantité trop élevée pour {$p['nom']}");
+            die("Quantité supérieure au stock pour {$p['nom']}");
         }
 
         if ($qte > 0) {
             $totalDC += $qte * $p['prix'];
             $totalGlobal += $qte * $p['prix'];
             $recap[] = [
+                'type' => 'DC',
+                'produit_id' => $p['id'],
                 'nom' => $p['nom'],
-                'qte' => $qte,
-                'prix' => $p['prix'],
-                'type' => 'DC'
+                'quantite' => $qte,
+                'prix' => $p['prix']
             ];
         }
     }
 
+    /* Produits libres : PRIX TOTAL */
     $qteLibre  = (int)($_POST['qte_libre'] ?? 0);
     $prixLibre = (float)($_POST['prix_libre'] ?? 0);
 
     if ($qteLibre > 0 && $prixLibre > 0) {
-        $totalGlobal += $qteLibre * $prixLibre;
+        $totalGlobal += $prixLibre;
         $recap[] = [
-            'nom' => 'Produits libres',
-            'qte' => $qteLibre,
-            'prix' => $prixLibre,
-            'type' => 'LIBRE'
+            'type' => 'LIBRE',
+            'produit_id' => null,
+            'nom' => 'Produit libre hors Driv’n Cook',
+            'quantite' => $qteLibre,
+            'prix' => $prixLibre
         ];
     }
 
@@ -63,7 +66,7 @@ if ($_POST) {
         $valide = $taux >= 80;
     }
 
-    /* VALIDATION COMMANDE */
+    /* VALIDATION */
     if (isset($_POST['valider']) && $valide) {
 
         try {
@@ -78,44 +81,37 @@ if ($_POST) {
 
             foreach ($recap as $r) {
 
+                $stmt = $pdo->prepare("
+                    INSERT INTO commande_lignes
+                    (commande_id, produit_id, quantite, prix, type)
+                    VALUES (?, ?, ?, ?, ?)
+                ");
+                $stmt->execute([
+                    $commande_id,
+                    $r['produit_id'],
+                    $r['quantite'],
+                    $r['prix'],
+                    $r['type']
+                ]);
+
                 if ($r['type'] === 'DC') {
-                    $produit = array_filter($produits, fn($p) => $p['nom'] === $r['nom']);
-                    $produit = array_values($produit)[0];
-
-                    $stmt = $pdo->prepare("
-                        INSERT INTO commande_lignes
-                        (commande_id, produit_id, quantite, prix, type)
-                        VALUES (?, ?, ?, ?, 'DC')
-                    ");
-                    $stmt->execute([
-                        $commande_id,
-                        $produit['id'],
-                        $r['qte'],
-                        $r['prix']
-                    ]);
-
                     $pdo->prepare("
-                        UPDATE produits SET stock = stock - ?
+                        UPDATE produits
+                        SET stock = stock - ?
                         WHERE id = ?
-                    ")->execute([$r['qte'], $produit['id']]);
-                } else {
-                    $stmt = $pdo->prepare("
-                        INSERT INTO commande_lignes
-                        (commande_id, produit_id, quantite, prix, type)
-                        VALUES (?, NULL, ?, ?, 'LIBRE')
-                    ");
-                    $stmt->execute([
-                        $commande_id,
-                        $r['qte'],
-                        $r['prix']
-                    ]);
+                    ")->execute([$r['quantite'], $r['produit_id']]);
                 }
             }
 
             $pdo->prepare("
                 UPDATE commandes
                 SET total = (
-                    SELECT SUM(quantite * prix)
+                    SELECT SUM(
+                        CASE 
+                            WHEN type = 'LIBRE' THEN prix
+                            ELSE quantite * prix
+                        END
+                    )
                     FROM commande_lignes
                     WHERE commande_id = ?
                 )
@@ -140,7 +136,10 @@ if ($_POST) {
 <meta charset="UTF-8">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
+
 <body class="container">
+
+<a href="dashboard.php" class="btn btn-outline-secondary mb-3">← Dashboard</a>
 
 <h1>Passer une commande</h1>
 
@@ -170,9 +169,9 @@ if ($_POST) {
 <hr>
 
 <div class="card border-warning p-3">
-<h5 class="text-warning">Produits libres</h5>
-<input type="number" name="qte_libre" class="form-control mb-2" placeholder="Quantité">
-<input type="number" step="0.01" name="prix_libre" class="form-control" placeholder="Prix unitaire">
+<h5 class="text-warning">Produits libres (hors Driv’n Cook)</h5>
+<input type="number" name="qte_libre" class="form-control mb-2" placeholder="Quantité totale">
+<input type="number" step="0.01" name="prix_libre" class="form-control" placeholder="Prix total">
 </div>
 
 <button class="btn btn-primary mt-3">Calculer</button>
@@ -190,6 +189,7 @@ Taux Driv’n Cook : <?= $taux ?> %
 </form>
 </body>
 </html>
+
 
 
 

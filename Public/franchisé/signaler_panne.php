@@ -65,6 +65,8 @@ if (isset($_POST['type'])) {
 <option>Autre</option>
 </select>
 
+<a href="dashboard.php" class="btn btn-outline-secondary mb-3">← Dashboard</a>
+
 <button class="btn btn-danger">Déclarer la panne</button>
 </form>
 
