@@ -22,7 +22,10 @@ $franchise_id = $_SESSION['franchise_id'];
     <li><a href="mon_camion.php">Mon camion</a></li>
     <li><a href="commandes.php">Mes commandes</a></li>
     <li><a href="ventes.php">Mes ventes</a></li>
+    <li><a href="mes_factures.php">Mes factures</a></li>
 </ul>
+
+
 
 <a href="../logout.php">Déconnexion</a>
 

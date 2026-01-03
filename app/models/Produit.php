@@ -10,13 +10,15 @@ class Produit {
 
     public static function create($pdo, $data) {
         $stmt = $pdo->prepare("
-            INSERT INTO produits (nom, entrepot_id, origine)
-            VALUES (?, ?, ?)
+            INSERT INTO produits (nom, entrepot_id, origine, stock, prix)
+            VALUES (?, ?, ?, ?, ?)
         ");
         return $stmt->execute([
             $data['nom'],
             $data['entrepot_id'],
-            $data['origine']
+            $data['origine'],
+            $data['stock'],    
+            $data['prix']       
         ]);
     }
 
