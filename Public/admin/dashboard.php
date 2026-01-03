@@ -1,13 +1,34 @@
 <?php
 require_once __DIR__ . '/../../config/database.php';
-require_once __DIR__ . '/../../app/models/Produit.php';
 
-$ca = $pdo->query("SELECT SUM(montant) FROM ventes")->fetchColumn() ?? 0;
+// 1️⃣ Somme des redevances de toutes les franchises actives
+$redevances = $pdo->query("
+    SELECT SUM(COALESCE(v.montant,0) * 0.04) AS total_redevances
+    FROM franchises f
+    LEFT JOIN ventes v ON v.franchise_id = f.id
+    WHERE f.actif = 1
+")->fetchColumn() ?? 0;
 
+// 2️⃣ Somme des droits d'entrée payés (50 000€ pour chaque franchise payée)
+$droit_entree = $pdo->query("
+    SELECT COUNT(*) 
+    FROM franchises f
+    WHERE f.actif = 1
+      AND EXISTS (
+          SELECT 1 FROM paiements p
+          WHERE p.franchise_id = f.id
+            AND p.type = 'DROIT_ENTREE'
+      )
+")->fetchColumn() ?? 0;
+
+// 3️⃣ Calcul du CA total affiché dans le dashboard
+$ca = $redevances + ($droit_entree * 50000);
+
+// Camions
 $totalCamions = $pdo->query("SELECT COUNT(*) FROM camions")->fetchColumn();
 $camionsHS = $pdo->query("SELECT COUNT(*) FROM camions WHERE etat='PANNE'")->fetchColumn();
-
 ?>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -41,3 +62,4 @@ $camionsHS = $pdo->query("SELECT COUNT(*) FROM camions WHERE etat='PANNE'")->fet
 
 </body>
 </html>
+
