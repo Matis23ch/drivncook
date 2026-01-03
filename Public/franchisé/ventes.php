@@ -25,7 +25,7 @@ if (isset($_POST['montant'])) {
 </head>
 <body class="container mt-4">
 
-<h1>Déclarer mon chiffre d’affaires</h1>
+<h1>Déclarer mon chiffre d’affaires (A faire chaque mois)</h1>
 
 <form method="POST" class="mb-4">
 <input type="number" step="0.01" name="montant" class="form-control mb-2" placeholder="Montant €" required>

@@ -24,39 +24,56 @@ class Franchisé
                 $data['nom'],
                 $franchise['id']
             ]);
-            return;
-        }
-
+            $franchise_id = $franchise['id'];
+        } 
         // ❌ Existe déjà et actif → erreur
-        if ($franchise && $franchise['actif']) {
+        elseif ($franchise && $franchise['actif']) {
             throw new Exception("Ce franchisé existe déjà");
+        } 
+        // 🆕 Création franchisé
+        else {
+            $stmt = $pdo->prepare("
+                INSERT INTO franchises (nom, email, actif)
+                VALUES (?, ?, 1)
+            ");
+            $stmt->execute([
+                $data['nom'],
+                $data['email']
+            ]);
+            $franchise_id = $pdo->lastInsertId();
         }
 
-        // 🆕 Création franchisé
-        $stmt = $pdo->prepare("
-            INSERT INTO franchises (nom, email, actif)
-            VALUES (?, ?, 1)
-        ");
-        $stmt->execute([
-            $data['nom'],
-            $data['email']
-        ]);
+        // 🔗 Lier ou créer le user associé
+        $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
+        $stmt->execute([$data['email']]);
+        $user = $stmt->fetch();
 
-        $franchise_id = $pdo->lastInsertId();
-
-        // 🔗 Lier au user si existe
-        $stmt = $pdo->prepare("
-            UPDATE users
-            SET franchise_id = ?
-            WHERE email = ?
-        ");
-        $stmt->execute([
-            $franchise_id,
-            $data['email']
-        ]);
+        if ($user) {
+            // lier si déjà existant
+            $stmt = $pdo->prepare("
+                UPDATE users
+                SET franchise_id = ?
+                WHERE email = ?
+            ");
+            $stmt->execute([
+                $franchise_id,
+                $data['email']
+            ]);
+        } else {
+            // créer user avec mdp par défaut "test"
+            $stmt = $pdo->prepare("
+                INSERT INTO users (email, password, role, franchise_id)
+                VALUES (?, 'test', 'FRANCHISE', ?)
+            ");
+            $stmt->execute([
+                $data['email'],
+                $franchise_id
+            ]);
+        }
     }
 
-    public static function deactivate(PDO $pdo, int $id)
+    // Méthode pour désactiver une franchise (au lieu de delete)
+    public static function desactiver(PDO $pdo, int $id)
     {
         $stmt = $pdo->prepare("
             UPDATE franchises
@@ -66,5 +83,6 @@ class Franchisé
         $stmt->execute([$id]);
     }
 }
+
 
 

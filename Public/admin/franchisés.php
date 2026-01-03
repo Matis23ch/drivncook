@@ -44,7 +44,7 @@ $franchises = FranchiséController::index($pdo);
 <th>Email</th>
 <th>Camion</th>
 <th>Droit d’entrée</th>
-<th>Redevance (4%)</th>
+<th>Redevance cumulée (4%)</th>
 <th>Action</th>
 </tr>
 
