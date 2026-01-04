@@ -94,7 +94,7 @@ $camions_dispo = $pdo->query("SELECT * FROM camions WHERE etat='DISPONIBLE'")->f
         <tr><th>Référence</th><td><?= htmlspecialchars($camion['reference']) ?></td></tr>
         <tr><th>Localisation</th><td><?= htmlspecialchars($camion['localisation']) ?></td></tr>
         <tr><th>État</th>
-            <td><?= $camion['etat'] === 'PANNE' ? '🚨 Panne déclarée' : '✅ Opérationnel' ?></td>
+            <td><?= $camion['etat_technique'] === 'PANNE' ? '🚨 Panne déclarée' : '✅ Opérationnel' ?></td>
         </tr>
     </table>
     <a href="signaler_panne.php" class="btn btn-danger">Déclarer une panne</a>
