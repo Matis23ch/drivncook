@@ -25,20 +25,54 @@ $commandes = $stmt->fetchAll();
 <meta charset="UTF-8">
 <title>Mes factures</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f0f2f5;
+    margin: 0;
+    padding: 2rem;
+}
+
+h1 {
+    font-weight: 600;
+    margin-bottom: 2rem;
+}
+
+.table {
+    background-color: #fff;
+    border-radius: 0.8rem;
+    overflow: hidden;
+}
+
+.table thead {
+    background-color: #f8f9fa;
+}
+
+.btn-modern {
+    border-radius: 0.8rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+.bottom-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+</style>
 </head>
 
-<body class="container mt-4">
+<body>
 
-<a href="dashboard.php" class="btn btn-outline-secondary mb-3">← Dashboard</a>
-
-<h1 class="mb-4">Mes factures</h1>
+<h1>Mes factures</h1>
 
 <?php if (!$commandes): ?>
     <div class="alert alert-info">Aucune commande passée.</div>
 <?php else: ?>
 
 <table class="table table-bordered align-middle">
-<thead class="table-light">
+<thead>
 <tr>
     <th>Date</th>
     <th>Taux DC</th>
@@ -52,16 +86,13 @@ $commandes = $stmt->fetchAll();
     <td><?= date('d/m/Y', strtotime($c['date_commande'])) ?></td>
     <td><?= htmlspecialchars($c['taux_dc']) ?> %</td>
     <td class="d-flex gap-2">
-        <!-- Voir facture HTML -->
         <a href="facture.php?id=<?= $c['id'] ?>" 
-           class="btn btn-primary btn-sm">
+           class="btn btn-primary btn-modern">
             Voir
         </a>
-
-        <!-- Générer PDF -->
         <a href="facture_pdf.php?id=<?= $c['id'] ?>" 
            target="_blank"
-           class="btn btn-outline-dark btn-sm">
+           class="btn btn-outline-dark btn-modern">
             PDF
         </a>
     </td>
@@ -72,6 +103,13 @@ $commandes = $stmt->fetchAll();
 
 <?php endif; ?>
 
+<div class="bottom-buttons" style="max-width:400px;">
+    <a href="dashboard.php" class="btn btn-secondary btn-modern">
+        ← Retour au dashboard
+    </a>
+</div>
+
 </body>
 </html>
+
 

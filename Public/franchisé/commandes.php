@@ -68,7 +68,6 @@ if ($_POST) {
 
     /* VALIDATION */
     if (isset($_POST['valider']) && $valide) {
-
         try {
             $pdo->beginTransaction();
 
@@ -134,10 +133,56 @@ if ($_POST) {
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<title>Passer une commande</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+
+<style>
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f0f2f5;
+    margin: 0;
+    padding: 2rem;
+}
+
+h1 {
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.row.mb-2 {
+    align-items: center;
+}
+
+input.form-control, select.form-control {
+    border-radius: 0.8rem;
+}
+
+.card {
+    border-radius: 0.8rem;
+    padding: 1rem;
+}
+
+.btn-modern {
+    border-radius: 0.8rem;
+    padding: 0.6rem 1.5rem;
+    font-size: 1rem;
+}
+
+.bottom-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.bottom-buttons .btn-modern {
+    flex: 1;
+}
+</style>
 </head>
 
-<body class="container">
+<body>
 
 <a href="dashboard.php" class="btn btn-outline-secondary mb-3">← Dashboard</a>
 
@@ -151,9 +196,7 @@ if ($_POST) {
 <div class="row mb-2">
     <div class="col">
         <?= htmlspecialchars($p['nom']) ?>
-        <small class="text-muted">
-            (<?= number_format($p['prix'],2) ?> € — stock <?= $p['stock'] ?>)
-        </small>
+        <small class="text-muted">(<?= number_format($p['prix'],2) ?> € — stock <?= $p['stock'] ?>)</small>
     </div>
     <div class="col-3">
         <input type="number"
@@ -168,13 +211,13 @@ if ($_POST) {
 
 <hr>
 
-<div class="card border-warning p-3">
+<div class="card border-warning mb-3">
 <h5 class="text-warning">Produits libres (hors Driv’n Cook)</h5>
 <input type="number" name="qte_libre" class="form-control mb-2" placeholder="Quantité totale">
 <input type="number" step="0.01" name="prix_libre" class="form-control" placeholder="Prix total">
 </div>
 
-<button class="btn btn-primary mt-3">Calculer</button>
+<button class="btn btn-primary btn-modern mt-2">Calculer</button>
 
 <?php if ($taux !== null): ?>
 <div class="alert <?= $valide ? 'alert-success' : 'alert-danger' ?> mt-3">
@@ -182,13 +225,22 @@ Taux Driv’n Cook : <?= $taux ?> %
 </div>
 
 <?php if ($valide): ?>
-<button name="valider" class="btn btn-success">Valider la commande</button>
+<div class="bottom-buttons">
+    <button name="valider" class="btn btn-success btn-modern">
+        Valider la commande
+    </button>
+    <a href="dashboard.php" class="btn btn-secondary btn-modern">
+        Annuler
+    </a>
+</div>
 <?php endif; ?>
 <?php endif; ?>
 
 </form>
+
 </body>
 </html>
+
 
 
 
