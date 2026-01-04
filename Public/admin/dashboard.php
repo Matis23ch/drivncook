@@ -9,7 +9,7 @@ $redevances = $pdo->query("
     WHERE f.actif = 1
 ")->fetchColumn() ?? 0;
 
-// 2️⃣ Somme des droits d'entrée payés (50 000€ pour chaque franchise payée)
+// 2️⃣ Somme des droits d'entrée payés
 $droit_entree = $pdo->query("
     SELECT COUNT(*) 
     FROM franchises f
@@ -21,7 +21,7 @@ $droit_entree = $pdo->query("
       )
 ")->fetchColumn() ?? 0;
 
-// 3️⃣ Calcul du CA total affiché dans le dashboard
+// 3️⃣ CA total
 $ca = $redevances + ($droit_entree * 50000);
 
 // Camions
@@ -34,79 +34,77 @@ $camionsHS = $pdo->query("SELECT COUNT(*) FROM camions WHERE etat='PANNE'")->fet
 <head>
 <meta charset="UTF-8">
 <title>Dashboard DRIV’N COOK</title>
+
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+
 <style>
-    html, body {
-        height: 100%;
-        margin: 0;
-        font-family: 'Inter', sans-serif;
-        background-color: #f0f2f5;
-    }
+html, body {
+    height: 100%;
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: #f0f2f5;
+}
 
-    .container-full {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        padding: 2rem;
-    }
+.container-full {
+    min-height: 100vh;
+    padding: 2rem;
+}
 
-    h1 {
-        font-weight: 600;
-        margin-bottom: 1rem;
-    }
+h1 {
+    font-weight: 600;
+}
 
-    .stats-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
+/* Stats */
+.stats-row {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
 
-    .stats-card {
-        flex: 1 1 200px;
-        padding: 1.5rem;
-        border-radius: 1rem;
-        background-color: #ffffff;
-        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        min-height: 150px;
-    }
+.stats-card {
+    flex: 1;
+    padding: 2rem;
+    border-radius: 1.2rem;
+    background-color: #fff;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    text-align: center;
+}
 
-    .stats-card h5 {
-        font-size: 1.1rem;
-        margin-bottom: 0.5rem;
-        color: #495057;
-    }
+.stats-card h5 {
+    font-size: 1.1rem;
+    color: #6c757d;
+}
 
-    .stats-card p {
-        font-size: 1.6rem;
-        font-weight: 600;
-        margin: 0;
-    }
+.stats-card p {
+    font-size: 1.8rem;
+    font-weight: 600;
+}
 
-    .buttons-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem;
-        margin-top: 1rem;
-    }
+/* Boutons bas */
+.buttons-row {
+    display: flex;
+    gap: 1.5rem;
+}
 
-    .btn-dashboard {
-        flex: 1 1 220px;
-        font-size: 1rem;
-        padding: 0.8rem 1rem;
-    }
+.btn-dashboard {
+    flex: 1;
+    padding: 1.3rem;
+    font-size: 1.15rem;
+    font-weight: 500;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+}
 
-    form.logout-form button {
-        height: 40px;
-    }
+.btn-dashboard i {
+    font-size: 1.4rem;
+}
 </style>
 </head>
+
 <body>
 
 <div class="container-full">
@@ -114,8 +112,8 @@ $camionsHS = $pdo->query("SELECT COUNT(*) FROM camions WHERE etat='PANNE'")->fet
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Dashboard DRIV’N COOK</h1>
-        <form class="logout-form" action="/drivncook/public/logout.php" method="POST">
-            <button type="submit" class="btn btn-outline-danger">
+        <form action="/drivncook/public/logout.php" method="POST">
+            <button class="btn btn-outline-danger">
                 <i class="bi bi-box-arrow-right"></i> Déconnexion
             </button>
         </form>
@@ -123,24 +121,26 @@ $camionsHS = $pdo->query("SELECT COUNT(*) FROM camions WHERE etat='PANNE'")->fet
 
     <!-- Stats -->
     <div class="stats-row">
-        <div class="stats-card text-center">
+        <div class="stats-card">
             <h5><i class="bi bi-currency-euro"></i> Chiffre d'affaires</h5>
             <p><?= number_format($ca, 2) ?> €</p>
         </div>
-        <div class="stats-card text-center">
+        <div class="stats-card">
             <h5><i class="bi bi-truck"></i> Camions</h5>
             <p><?= $totalCamions ?> <small>(<?= $camionsHS ?> en panne)</small></p>
         </div>
     </div>
 
-    <!-- Buttons -->
+    <!-- Boutons -->
     <div class="buttons-row">
         <a href="franchisés.php" class="btn btn-primary btn-dashboard">
             <i class="bi bi-people-fill"></i> Gérer les franchisés
         </a>
+
         <a href="camions.php" class="btn btn-primary btn-dashboard">
             <i class="bi bi-truck-flatbed"></i> Gérer les camions
         </a>
+
         <a href="entrepots.php" class="btn btn-primary btn-dashboard">
             <i class="bi bi-archive-fill"></i> Entrepôts
         </a>
@@ -148,7 +148,6 @@ $camionsHS = $pdo->query("SELECT COUNT(*) FROM camions WHERE etat='PANNE'")->fet
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
 
