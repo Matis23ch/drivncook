@@ -4,7 +4,6 @@ require_once __DIR__ . '/../../config/database.php';
 
 use Dompdf\Dompdf;
 
-// Vérification rôle
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
@@ -13,9 +12,6 @@ if ($_SESSION['role'] !== 'FRANCHISE') exit;
 $commande_id = (int)($_GET['id'] ?? 0);
 $franchise_id = $_SESSION['franchise_id'];
 
-/* ===========================
-   Récupérer les infos de la commande
-=========================== */
 $stmt = $pdo->prepare("
     SELECT *
     FROM commandes
@@ -35,9 +31,6 @@ $stmt = $pdo->prepare("
 $stmt->execute([$commande_id]);
 $lignes = $stmt->fetchAll();
 
-/* ===========================
-   Générer le HTML pour le PDF
-=========================== */
 $html = '<!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -61,9 +54,8 @@ h1 { text-align: center; }
 
 $totalDC = 0;
 
-// ⚡ On ne prend en compte que les produits DC
 foreach ($lignes as $l) {
-    if ($l['type'] !== 'DC') continue; // ignore produits libres
+    if ($l['type'] !== 'DC') continue; 
 
     $ligneTotal = $l['quantite'] * $l['prix'];
     $totalDC += $ligneTotal;
@@ -85,9 +77,6 @@ $html .= '<tr>
 </body>
 </html>';
 
-/* ===========================
-   Générer le PDF
-=========================== */
 $dompdf = new Dompdf([
     'isRemoteEnabled' => true
 ]);
@@ -95,7 +84,6 @@ $dompdf->loadHtml($html, 'UTF-8');
 $dompdf->setPaper('A4', 'portrait');
 $dompdf->render();
 
-/* téléchargement */
 $dompdf->stream("facture_$commande_id.pdf", ["Attachment" => true]);
 exit;
 

@@ -63,7 +63,6 @@ $lignes = $stmt->fetchAll();
 <?php 
 $totalDC = 0;
 foreach ($lignes as $l):
-    // On n'inclut que les produits DC
     if ($l['type'] !== 'DC') continue;
 
     $ligneTotal = $l['quantite'] * $l['prix'];

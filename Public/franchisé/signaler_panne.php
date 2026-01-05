@@ -19,11 +19,9 @@ if (!$camion) {
 }
 
 if (isset($_POST['type'])) {
-    // 1️⃣ Enregistrer la panne
     $stmt = $pdo->prepare("INSERT INTO pannes (camion_id, type) VALUES (?, ?)");
     $stmt->execute([$camion['id'], $_POST['type']]);
 
-    // 2️⃣ Passer le camion en PANNE (technique)
     $pdo->prepare("UPDATE camions SET etat_technique = 'PANNE' WHERE id = ?")
         ->execute([$camion['id']]);
 

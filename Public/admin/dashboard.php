@@ -1,7 +1,6 @@
 <?php
 require_once __DIR__ . '/../../config/database.php';
 
-// 1️⃣ Somme des redevances de toutes les franchises actives
 $redevances = $pdo->query("
     SELECT SUM(COALESCE(v.montant,0) * 0.04) AS total_redevances
     FROM franchises f
@@ -9,7 +8,6 @@ $redevances = $pdo->query("
     WHERE f.actif = 1
 ")->fetchColumn() ?? 0;
 
-// 2️⃣ Somme des droits d'entrée payés
 $droit_entree = $pdo->query("
     SELECT COUNT(*) 
     FROM franchises f
@@ -21,13 +19,10 @@ $droit_entree = $pdo->query("
       )
 ")->fetchColumn() ?? 0;
 
-// 3️⃣ CA total
 $ca = $redevances + ($droit_entree * 50000);
 
-// Camions
 $totalCamions = $pdo->query("SELECT COUNT(*) FROM camions")->fetchColumn();
 
-// ⚡ Correction : vérifier l'état en majuscules pour éviter 0 en panne
 $camionsHS = $pdo->query("SELECT COUNT(*) FROM camions WHERE UPPER(etat_technique)='PANNE'")->fetchColumn();
 ?>
 
@@ -57,7 +52,6 @@ h1 {
     font-weight: 600;
 }
 
-/* Stats */
 .stats-row {
     display: flex;
     gap: 1.5rem;
@@ -83,7 +77,6 @@ h1 {
     font-weight: 600;
 }
 
-/* Boutons bas */
 .buttons-row {
     display: flex;
     gap: 1.5rem;
@@ -111,7 +104,6 @@ h1 {
 
 <div class="container-full">
 
-    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Dashboard DRIV’N COOK</h1>
         <form action="/drivncook/public/logout.php" method="POST">
@@ -121,7 +113,6 @@ h1 {
         </form>
     </div>
 
-    <!-- Stats -->
     <div class="stats-row">
         <div class="stats-card">
             <h5><i class="bi bi-currency-euro"></i> Chiffre d'affaires</h5>
@@ -133,7 +124,6 @@ h1 {
         </div>
     </div>
 
-    <!-- Boutons -->
     <div class="buttons-row">
         <a href="franchisés.php" class="btn btn-primary btn-dashboard">
             <i class="bi bi-people-fill"></i> Gérer les franchisés

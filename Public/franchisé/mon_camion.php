@@ -9,7 +9,6 @@ if ($_SESSION['role'] !== 'FRANCHISE') {
 
 $franchise_id = $_SESSION['franchise_id'];
 
-// Vérifier si droit d'entrée payé
 $droit_paye = $pdo->prepare("
     SELECT COUNT(*) 
     FROM paiements 
@@ -19,12 +18,10 @@ $droit_paye = $pdo->prepare("
 $droit_paye->execute([$franchise_id]);
 $droit_paye = $droit_paye->fetchColumn() > 0;
 
-// Récupérer le camion actuel
 $camion = $pdo->prepare("SELECT * FROM camions WHERE franchise_id = ?");
 $camion->execute([$franchise_id]);
 $camion = $camion->fetch();
 
-// Paiement droit d'entrée
 if (isset($_POST['payer'])) {
     $stmt = $pdo->prepare("
         INSERT INTO paiements (franchise_id, type, montant, date_paiement)
@@ -36,7 +33,6 @@ if (isset($_POST['payer'])) {
     exit;
 }
 
-// Choisir un camion
 if (isset($_POST['camion_id'])) {
     $stmt = $pdo->prepare("
         UPDATE camions
@@ -49,7 +45,6 @@ if (isset($_POST['camion_id'])) {
     exit;
 }
 
-// Camions disponibles
 $camions_dispo = $pdo->query("SELECT * FROM camions WHERE etat='DISPONIBLE'")->fetchAll();
 ?>
 
@@ -105,7 +100,6 @@ $camions_dispo = $pdo->query("SELECT * FROM camions WHERE etat='DISPONIBLE'")->f
         margin-top: 1rem;
     }
 
-    /* Nouvel alignement des deux boutons du bas */
     .bottom-buttons {
         display: flex;
         gap: 1rem;
@@ -114,7 +108,7 @@ $camions_dispo = $pdo->query("SELECT * FROM camions WHERE etat='DISPONIBLE'")->f
     }
 
     .bottom-buttons .btn-modern {
-        flex: 1; /* prennent la même largeur */
+        flex: 1; 
     }
 </style>
 </head>

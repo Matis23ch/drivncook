@@ -4,7 +4,6 @@ require_once __DIR__ . '/../../config/database.php';
 
 $franchise_id = $_SESSION['franchise_id'];
 
-/* Vérifier paiement */
 $stmt = $pdo->prepare("
     SELECT COUNT(*) 
     FROM paiements 

@@ -69,7 +69,6 @@ $franchises = FranchiséController::index($pdo);
 
 <div class="page-container">
 
-    <!-- HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1><i class="bi bi-people-fill"></i> Gestion des franchisés</h1>
         <a href="dashboard.php" class="btn btn-outline-primary btn-rounded">
@@ -77,7 +76,6 @@ $franchises = FranchiséController::index($pdo);
         </a>
     </div>
 
-    <!-- FORM AJOUT -->
     <div class="card mb-4">
         <div class="card-body">
             <h5 class="mb-3">Ajouter un franchisé</h5>
@@ -100,7 +98,6 @@ $franchises = FranchiséController::index($pdo);
         </div>
     </div>
 
-    <!-- TABLE -->
     <div class="card">
         <div class="card-body">
             <h5 class="mb-3">Liste des franchisés</h5>

@@ -11,7 +11,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->execute([$_POST['email']]);
     $user = $stmt->fetch();
 
-    // pour le projet : mot de passe en clair accepté
     if ($user && $user['password'] === $_POST['password']) {
 
         $_SESSION['user_id'] = $user['id'];

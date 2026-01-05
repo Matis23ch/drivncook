@@ -11,7 +11,6 @@ if ($_SESSION['role'] !== 'FRANCHISE') {
 
 $franchise_id = $_SESSION['franchise_id'];
 
-/* Produits Driv’n Cook */
 $produits = $pdo->query("
     SELECT id, nom, prix, stock
     FROM produits
@@ -45,7 +44,6 @@ if ($_POST) {
         }
     }
 
-    /* Produits libres */
     $qteLibre  = (int)($_POST['qte_libre'] ?? 0);
     $prixLibre = (float)($_POST['prix_libre'] ?? 0);
 

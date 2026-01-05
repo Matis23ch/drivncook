@@ -33,7 +33,6 @@ $franchise_id = $_SESSION['franchise_id'];
         flex-direction: column;
     }
 
-    /* Header */
     .header {
         display: flex;
         justify-content: space-between;
@@ -51,7 +50,6 @@ $franchise_id = $_SESSION['franchise_id'];
         margin-bottom: 2rem;
     }
 
-    /* Grid boutons */
     .menu-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -109,7 +107,6 @@ $franchise_id = $_SESSION['franchise_id'];
 
 <div class="container-full">
 
-    <!-- Header -->
     <div class="header">
         <h1>Dashboard Franchisé</h1>
         <form action="../logout.php" method="POST">
@@ -121,7 +118,6 @@ $franchise_id = $_SESSION['franchise_id'];
 
     <p class="welcome">Bienvenue sur votre espace franchisé.</p>
 
-    <!-- Menu -->
     <div class="menu-grid">
 
         <a href="mon_camion.php" class="menu-card">

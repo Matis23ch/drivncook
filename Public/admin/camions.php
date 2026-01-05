@@ -7,9 +7,6 @@ if ($_SESSION['role'] !== 'ADMIN') {
     exit;
 }
 
-/* =======================
-   CRÉATION CAMION
-======================= */
 if (isset($_POST['add'])) {
     $stmt = $pdo->prepare("
         INSERT INTO camions (reference, localisation, etat, etat_technique)
@@ -21,9 +18,6 @@ if (isset($_POST['add'])) {
     ]);
 }
 
-/* =======================
-   LIBÉRER CAMION
-======================= */
 if (isset($_GET['liberer'])) {
     $stmt = $pdo->prepare("
         UPDATE camions
@@ -34,9 +28,6 @@ if (isset($_GET['liberer'])) {
     $stmt->execute([$_GET['liberer']]);
 }
 
-/* =======================
-   RÉPARER CAMION
-======================= */
 if (isset($_GET['reparer'])) {
     $stmt = $pdo->prepare("
         UPDATE camions
@@ -46,9 +37,6 @@ if (isset($_GET['reparer'])) {
     $stmt->execute([$_GET['reparer']]);
 }
 
-/* =======================
-   SUPPRIMER CAMION
-======================= */
 if (isset($_GET['delete'])) {
     $stmt = $pdo->prepare("
         DELETE FROM camions WHERE id = ?
@@ -56,9 +44,6 @@ if (isset($_GET['delete'])) {
     $stmt->execute([$_GET['delete']]);
 }
 
-/* =======================
-   LISTE CAMIONS
-======================= */
 $camions = $pdo->query("
     SELECT c.*,
            u.email AS franchise_email,
@@ -120,7 +105,6 @@ $camions = $pdo->query("
 
 <div class="page-container">
 
-    <!-- HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1><i class="bi bi-truck"></i> Gestion des camions</h1>
         <a href="dashboard.php" class="btn btn-outline-primary btn-rounded">
@@ -128,7 +112,6 @@ $camions = $pdo->query("
         </a>
     </div>
 
-    <!-- CRÉATION CAMION -->
     <div class="card mb-4">
         <div class="card-body">
             <h5 class="mb-3">Créer un camion</h5>
@@ -151,7 +134,6 @@ $camions = $pdo->query("
         </div>
     </div>
 
-    <!-- TABLE CAMIONS -->
     <div class="card">
         <div class="card-body">
             <h5 class="mb-3">Liste des camions</h5>

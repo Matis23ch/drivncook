@@ -1,23 +1,16 @@
 <?php
 session_start();
 
-/*
-|--------------------------------------------------------------------------
-| Détermination de la page demandée
-|--------------------------------------------------------------------------
-*/
+
 if (isset($_GET['page'])) {
     $page = $_GET['page'];
 } else {
 
-    // URL demandée
     $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-    // On enlève le chemin du projet
     $basePath = '/drivncook/public';
     $page = trim(str_replace($basePath, '', $uri), '/');
 
-    // Racine = home
     if ($page === '' || $page === 'index.php') {
         $page = 'home';
     }

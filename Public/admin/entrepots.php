@@ -9,13 +9,11 @@ $entrepots = [
     4 => 'Versailles – Stock mixte'
 ];
 
-// Supprimer un produit
 if (isset($_POST['delete_id'])) {
     $stmt = $pdo->prepare("DELETE FROM produits WHERE id = ?");
     $stmt->execute([$_POST['delete_id']]);
 }
 
-// Ajouter un produit
 if (isset($_POST['nom'], $_POST['entrepot_id'], $_POST['origine'], $_POST['prix'], $_POST['quantite'])) {
     $data = [
         'nom' => $_POST['nom'],
@@ -76,7 +74,6 @@ $tauxDC = Produit::tauxDC($pdo);
 
 <div class="page-container">
 
-    <!-- HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1><i class="bi bi-box-seam"></i> Gestion des entrepôts & produits</h1>
         <a href="dashboard.php" class="btn btn-outline-primary btn-rounded">
@@ -86,7 +83,6 @@ $tauxDC = Produit::tauxDC($pdo);
 
     <?php foreach ($entrepots as $id => $nomEntrepot): ?>
 
-    <!-- ENTREPÔT -->
     <div class="card mb-5">
         <div class="card-body">
 
@@ -98,7 +94,6 @@ $tauxDC = Produit::tauxDC($pdo);
                 <span class="badge bg-secondary">ID <?= $id ?></span>
             </div>
 
-            <!-- AJOUT PRODUIT -->
             <form method="POST" class="row g-3 mb-4">
                 <input type="hidden" name="entrepot_id" value="<?= $id ?>">
 
@@ -125,7 +120,6 @@ $tauxDC = Produit::tauxDC($pdo);
                 </div>
             </form>
 
-            <!-- TABLE PRODUITS -->
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
                     <thead>
