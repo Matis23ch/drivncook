@@ -28,8 +28,6 @@ $stmt = $pdo->prepare("
 ");
 $stmt->execute([$commande_id]);
 $lignes = $stmt->fetchAll();
-
-$totalLibre = 0;
 ?>
 
 <!DOCTYPE html>
@@ -62,15 +60,17 @@ $totalLibre = 0;
 </thead>
 <tbody>
 
-<?php foreach ($lignes as $l):
-    $ligneTotal = ($l['type'] === 'LIBRE')
-        ? $l['prix']
-        : ($l['quantite'] * $l['prix']);
+<?php 
+$totalDC = 0;
+foreach ($lignes as $l):
+    // On n'inclut que les produits DC
+    if ($l['type'] !== 'DC') continue;
 
-    if ($l['type'] === 'LIBRE') $totalLibre += $ligneTotal;
+    $ligneTotal = $l['quantite'] * $l['prix'];
+    $totalDC += $ligneTotal;
 ?>
 <tr>
-    <td><?= htmlspecialchars($l['nom'] ?? 'Produit libre hors Driv’n Cook') ?></td>
+    <td><?= htmlspecialchars($l['nom']) ?></td>
     <td><?= $l['type'] ?></td>
     <td><?= $l['quantite'] ?></td>
     <td><?= number_format($ligneTotal, 2) ?> €</td>
@@ -78,14 +78,9 @@ $totalLibre = 0;
 <?php endforeach; ?>
 
 <tr>
-    <th colspan="3" class="text-end">Total produits libres</th>
-    <th><?= number_format($totalLibre, 2) ?> €</th>
+    <th colspan="3" class="text-end">TOTAL Produits DC</th>
+    <th><?= number_format($totalDC, 2) ?> €</th>
 </tr>
-<tr>
-    <th colspan="3" class="text-end">TOTAL GLOBAL</th>
-    <th><?= number_format($commande['total'], 2) ?> €</th>
-</tr>
-
 </tbody>
 </table>
 
@@ -93,6 +88,7 @@ $totalLibre = 0;
 
 </body>
 </html>
+
 
 
 

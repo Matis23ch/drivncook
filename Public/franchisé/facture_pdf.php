@@ -38,7 +38,6 @@ $lignes = $stmt->fetchAll();
 /* ===========================
    Générer le HTML pour le PDF
 =========================== */
-$totalLibre = 0;
 $html = '<!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -60,10 +59,16 @@ h1 { text-align: center; }
 <th>Produit</th><th>Type</th><th>Quantité</th><th>Montant</th>
 </tr>';
 
+$totalDC = 0;
+
+// ⚡ On ne prend en compte que les produits DC
 foreach ($lignes as $l) {
-    $ligneTotal = ($l['type'] === 'LIBRE') ? $l['prix'] : ($l['quantite'] * $l['prix']);
-    if ($l['type'] === 'LIBRE') $totalLibre += $ligneTotal;
-    $nom = htmlspecialchars($l['nom'] ?? 'Produit libre hors Driv’n Cook', ENT_QUOTES, 'UTF-8');
+    if ($l['type'] !== 'DC') continue; // ignore produits libres
+
+    $ligneTotal = $l['quantite'] * $l['prix'];
+    $totalDC += $ligneTotal;
+
+    $nom = htmlspecialchars($l['nom'] ?? 'Produit DC', ENT_QUOTES, 'UTF-8');
     $html .= "<tr>
     <td>$nom</td>
     <td>{$l['type']}</td>
@@ -73,12 +78,8 @@ foreach ($lignes as $l) {
 }
 
 $html .= '<tr>
-<th colspan="3" style="text-align:right;">Total produits libres</th>
-<th>'.number_format($totalLibre,2).' €</th>
-</tr>
-<tr>
-<th colspan="3" style="text-align:right;">TOTAL GLOBAL</th>
-<th>'.number_format($commande['total'],2).' €</th>
+<th colspan="3" style="text-align:right;">TOTAL DC</th>
+<th>'.number_format($totalDC,2).' €</th>
 </tr>
 </table>
 </body>
@@ -97,5 +98,6 @@ $dompdf->render();
 /* téléchargement */
 $dompdf->stream("facture_$commande_id.pdf", ["Attachment" => true]);
 exit;
+
 
 

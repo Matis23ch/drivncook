@@ -23,8 +23,8 @@ $recap = [];
 
 if ($_POST) {
 
-    $totalDC = 0;
-    $totalGlobal = 0;
+    $totalQteDC = 0;
+    $totalQteLibre = 0;
 
     foreach ($produits as $p) {
         $qte = (int)($_POST['qte_' . $p['id']] ?? 0);
@@ -34,8 +34,7 @@ if ($_POST) {
         }
 
         if ($qte > 0) {
-            $totalDC += $qte * $p['prix'];
-            $totalGlobal += $qte * $p['prix'];
+            $totalQteDC += $qte;
             $recap[] = [
                 'type' => 'DC',
                 'produit_id' => $p['id'],
@@ -46,12 +45,12 @@ if ($_POST) {
         }
     }
 
-    /* Produits libres : PRIX TOTAL */
+    /* Produits libres */
     $qteLibre  = (int)($_POST['qte_libre'] ?? 0);
     $prixLibre = (float)($_POST['prix_libre'] ?? 0);
 
     if ($qteLibre > 0 && $prixLibre > 0) {
-        $totalGlobal += $prixLibre;
+        $totalQteLibre += $qteLibre;
         $recap[] = [
             'type' => 'LIBRE',
             'produit_id' => null,
@@ -61,8 +60,10 @@ if ($_POST) {
         ];
     }
 
-    if ($totalGlobal > 0) {
-        $taux = round(($totalDC / $totalGlobal) * 100, 2);
+    $totalQte = $totalQteDC + $totalQteLibre;
+
+    if ($totalQte > 0) {
+        $taux = round(($totalQteDC / $totalQte) * 100, 2);
         $valide = $taux >= 80;
     }
 
@@ -240,6 +241,7 @@ Taux Driv’n Cook : <?= $taux ?> %
 
 </body>
 </html>
+
 
 
 

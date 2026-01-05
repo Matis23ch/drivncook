@@ -26,7 +26,9 @@ $ca = $redevances + ($droit_entree * 50000);
 
 // Camions
 $totalCamions = $pdo->query("SELECT COUNT(*) FROM camions")->fetchColumn();
-$camionsHS = $pdo->query("SELECT COUNT(*) FROM camions WHERE etat='PANNE'")->fetchColumn();
+
+// ⚡ Correction : vérifier l'état en majuscules pour éviter 0 en panne
+$camionsHS = $pdo->query("SELECT COUNT(*) FROM camions WHERE UPPER(etat_technique)='PANNE'")->fetchColumn();
 ?>
 
 <!DOCTYPE html>
@@ -150,5 +152,7 @@ h1 {
 
 </body>
 </html>
+
+
 
 
